@@ -10,9 +10,9 @@ router.post('/registration',
     body('password').isLength({ min: 4, max: 44 }),
     userController.registration)
 router.post('/login', userController.login)
-router.post('/logout', userController.logout)
+router.get('/logout', userController.logout)
 router.get('/activate/:link', userController.activate)
 router.get('/refresh', userController.refresh)
-router.get('/users', authMiddleware, userController.getUsers)
+router.get('/check/:id', userController.check)
 
 module.exports = router

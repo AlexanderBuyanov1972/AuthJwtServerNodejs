@@ -17,7 +17,7 @@ app.use(cors({
     credentials: true,
     origin: process.env.API_URL_CLIENT
 }))
-app.use('/api', router)
+app.use('/', router)
 app.use(errorMiddlewares)
 
 const start = async () => {

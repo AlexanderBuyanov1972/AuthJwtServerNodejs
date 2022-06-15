@@ -8,15 +8,15 @@ const ApiError = require('../exceptions/api-error')
 const userModel = require('../models/user-model')
 
 class UserService {
-    async registration(email, password) {
+    async registration(username, email, password, role, isActivated) {
         const condidate = await UserModel.findOne({ email })
         if (condidate) {
-            throw ApiError.BadRequest(`Пользователь с почтовым аддрессом ${email} уже существует.`)
+            return { message: `Пользователь с почтовым аддрессом ${email} уже существует.` }
         }
         const hashPassword = await bcrypt.hash(password, 3)
         const activationLink = uuid.v4()
-        const user = await UserModel.create({ email, password: hashPassword, activationLink })
-        await mailService.sendActivationMail(email, `${process.env.API_URL_SERVER}/api/activate/${activationLink}`)
+        const user = await UserModel.create({ username, email, password: hashPassword, role, activationLink, isActivated })
+        await mailService.sendActivationMail(email, `${process.env.API_URL_SERVER}/activate/${activationLink}`)
         const userDto = new UserDto(user)
         const tokens = tokenService.generateTokens({ ...userDto })
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
@@ -61,15 +61,14 @@ class UserService {
             throw ApiError.UnauthorizedError()
 
         const user = await UserModel.findById(userData.id)
-        const userDto = new UserDto(user)
-        const tokens = tokenService.generateTokens({ ...userDto })
-        await tokenService.saveToken(userDto.id, tokens.refreshToken)
-        return { ...tokens, user: userDto }
-    }
-
-    async getAllUsers() {
-        const users = await userModel.find();
-        return users
+        if (user) {
+            const userDto = new UserDto(user)
+            const tokens = tokenService.generateTokens({ ...userDto })
+            await tokenService.saveToken(userDto.id, tokens.refreshToken)
+            return { ...tokens, user: userDto }
+        } else {
+            return null
+        }
     }
 
     async returnTokens(user) {
@@ -77,6 +76,16 @@ class UserService {
         const tokens = tokenService.generateTokens({ ...userDto })
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
         return { ...tokens, user: userDto }
+    }
+
+    async getUser(id){
+        const res = await UserModel.findOne({ id });
+        if(res){
+            const user = new UserDto(res)
+            return { user}
+        } else {
+            return null
+        }
     }
 }
 

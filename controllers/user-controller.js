@@ -10,13 +10,18 @@ class UserController {
             if (!errors.isEmpty()) {
                 return next(ApiError.BadRequest('Ошибка при валидации', errors.array()))
             }
-            const { email, password } = req.body;
-            const userData = await userService.registration(email, password)
-            res.cookie('refreshToken', userData.refreshToken, {
-                maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true
-            })
-            return res.json(userData)
+            const { username, email, password, role, isActivated } = req.body;
+            const userData = await userService.registration(username, email, password, role, isActivated)
+            if (userData.message) {
+                return res.json(userData)
+            } else {
+                res.cookie('refreshToken', userData.refreshToken, {
+                    maxAge: 30 * 24 * 60 * 60 * 1000,
+                    httpOnly: true
+                })
+                return res.json(userData)
+            }
+
         } catch (error) {
             next(error)
         }
@@ -78,10 +83,15 @@ class UserController {
         }
     }
 
-    async getUsers(req, res, next) {
+    async check(req, res, next) {
         try {
-            const users = await userService.getAllUsers()
-            return res.json(users)
+            const { id } = req.params;
+            const user = await userService.getUser(id)
+            if (user) {
+                return res.json(user)
+            }
+            return res.json({"message":""})
+
         } catch (error) {
             next(error)
         }
