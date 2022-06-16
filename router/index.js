@@ -17,5 +17,7 @@ router.get('/logout', userController.logout)
 router.get('/activate/:link', userController.activate)
 router.get('/refresh', userController.refresh)
 router.get('/check/:id', userController.check)
+// --- for checking middleware ---
+router.get('/all', authMiddleware, userController.getAll)
 
 module.exports = router

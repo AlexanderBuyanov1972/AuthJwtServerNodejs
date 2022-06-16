@@ -23,7 +23,12 @@ class UserController {
     }
 
     async check(req, res, next) {
-        return userService.getUser(req, res, next)
+        return userService.check(req, res, next)
+    }
+
+    // --- for checking middleware ---
+    async getAll(req, res, next){
+        return userService.getAll(req, res, next);
     }
 
 }

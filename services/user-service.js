@@ -28,9 +28,9 @@ class UserService {
             await mailService.sendActivationMail(email, `${process.env.API_URL_SERVER}/activate/${activationLink}`)
             const user = await userModel.create({ username, email, password: hashPassword, role, activationLink, isActivated })
 
-            const data = await responseService.createDataForResponse(user);
-            res = responseService.setCookie(res, data.tokens.refreshToken);
-            responseService.response(res, data, "OK", 200)
+            const object = await responseService.createDataForResponse(user);
+            res = responseService.setCookie(res, object.refreshToken);
+            responseService.response(res, object.data, "OK", 200)
 
         } catch (error) {
             next(error)
@@ -52,9 +52,12 @@ class UserService {
             const isPasswordsEquals = await bcrypt.compare(password, user.password)
             if (!isPasswordsEquals)
                 responseService.response(res, null, "Введён некорректный пароль.", 400)
-            const data = await responseService.createDataForResponse(user);
-            res = responseService.setCookie(res, data.tokens.refreshToken);
-            responseService.response(res, data, "OK", 200)
+
+
+            const object = await responseService.createDataForResponse(user);
+            res = responseService.setCookie(res, object.refreshToken);
+            responseService.response(res, object.data, "OK", 200)
+
 
         } catch (error) {
             next(error)
@@ -101,11 +104,11 @@ class UserService {
                 throw ApiError.UnauthorizedError()
             const user = await userModel.findById(userData.id)
             if (user) {
-                const data = await responseService.createDataForResponse(user);
-                res = responseService.setCookie(res, data.tokens.refreshToken);
-                responseService.response(res, data, "OK", 200)
+                const object = await responseService.createDataForResponse(user);
+            res = responseService.setCookie(res, object.refreshToken);
+            responseService.response(res, object.data, "OK", 200)
             } else {
-                responseService.response(res, null, "Не такого refresh токена в базе данных", 400)
+                responseService.response(res, null, "Нет такого refresh токена в базе данных", 400)
             }
         } catch (error) {
             next(error)
@@ -113,18 +116,26 @@ class UserService {
     }
 
 
-    async getUser(req, res, next) {
+    async check(req, res, next) {
         try {
             const { id } = req.params;
             const user = await UserModel.findOne({ id });
             if (user) {
                 const userDto = new UserDto(user)
-                responseService.response(res, { ...{ "accessToken": '', "refreshToken": '' }, user: userDto }, "OK", 200)
+                responseService.response(res, { ...{"accessToken": ''}, user: userDto }, "OK", 200)
             }
             responseService.response(res, null, `Пользователь с таким id не найден.`, 400)
         } catch (error) {
             next(error)
         }
+    }
+
+    // --- for checking middleware ---
+
+    async getAll(req, res, next) {
+        const data = await userModel.find()
+        responseService.response(res, { ...data }, "OK", 200)
+
     }
 
 }
