@@ -1,13 +1,13 @@
-module.exports = class UserDto {
+module.exports = class RegistrationRequest {
     email;
     username;
     roles;
-    isActivated;
+    password;
 
     constructor(model) {
         this.email = model.email;
         this.username = model.username;
         this.roles = model.roles;
-        this.isActivated = model.isActivated;
+        this.password = model.password;
     }
 }
