@@ -8,7 +8,7 @@ const router = new Router();
 router.post('/registration', body('email').isEmail(), body('password').isLength({ min: 5, max: 15 }), authController.registration)
 router.post('/login', body('email').isEmail(), body('password').isLength({ min: 5, max: 15 }), authController.login)
 router.get('/activate/:link', authController.activate)
-router.get('/refresh', authController.refresh)
+router.get('/refresh/:refreshToken', authController.refresh)
 
 
 // --- for checking middleware ---

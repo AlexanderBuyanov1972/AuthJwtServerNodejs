@@ -4,7 +4,7 @@ const tokenModel = require('../models/token-model')
 class TokenService {
     generateTokens(payload) {
         const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-            expiresIn: '600s'
+            expiresIn: '15s'
         })
         const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
             expiresIn: '1d'
@@ -36,26 +36,19 @@ class TokenService {
     }
 
     async saveToken(email, refreshToken) {
-        const tokenData = await tokenModel.findOne({email})
-
-        if (tokenData) {
-            tokenData.refreshToken = refreshToken
-            return tokenData.save()
-        }
-
-        const token = await tokenModel.create({
+        const tokenData = await tokenModel.create({
             email, refreshToken
         })
-        return token;
+        return tokenData;
     }
 
-    async removeToken(refreshToken) {
-        const tokenData = await tokenModel.deleteOne({ refreshToken })
+    async removeToken(email) {
+        const tokenData = await tokenModel.deleteOne({ email })
         return tokenData
     }
 
-    async findToken(refreshToken) {
-        const tokenData = await tokenModel.findOne({ refreshToken })
+    async findToken(email) {
+        const tokenData = await tokenModel.findOne({ email })
         return tokenData
     }
 
